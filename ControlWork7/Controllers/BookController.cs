@@ -271,7 +271,6 @@ namespace ControlWork7.Controllers
             var loans = await _context.BookLoans.Where(b => b.UserId == user.Id && b.ReturnDate == null).Include(b => b.Book).ToListAsync();
             return View(loans);
         }
-
         
         
         [HttpPost]
