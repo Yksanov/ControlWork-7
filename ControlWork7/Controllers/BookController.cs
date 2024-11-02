@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ControlWork7.Models;
+using ControlWork7.Services;
+using ControlWork7.ViewModels;
 
 namespace ControlWork7.Controllers
 {
@@ -18,13 +20,54 @@ namespace ControlWork7.Controllers
             _context = context;
         }
 
-       
-        public async Task<IActionResult> Index()
+        
+        //---------------------------------------------
+        public async Task<IActionResult> Index(SortBookState? sortOrder = SortBookState.NameAsc, int page = 1)
         {
-            return View(await _context.Books.ToListAsync());
-        }
+            IEnumerable<Book> books = await _context.Books.ToListAsync();
+            ViewBag.NameSort = sortOrder == SortBookState.NameAsc ? SortBookState.NameDesc : SortBookState.NameAsc;
+            ViewBag.AuthorSort = sortOrder == SortBookState.AuthorAsc ? SortBookState.AuthorDesc : SortBookState.AuthorAsc;
+            ViewBag.StatusSort = sortOrder == SortBookState.StatusAsc ? SortBookState.StatusDesc : SortBookState.StatusAsc;
 
+            switch (sortOrder)
+            {
+                case SortBookState.NameAsc:
+                    books = books.OrderBy(b => b.Name);
+                    break;
+                case SortBookState.NameDesc:
+                    books = books.OrderByDescending(b => b.Name);
+                    break;
+                
+                case SortBookState.AuthorAsc:
+                    books = books.OrderBy(b => b.Author);
+                    break;
+                case SortBookState.AuthorDesc:
+                    books = books.OrderByDescending(b => b.Author);
+                    break;
+                
+                case SortBookState.StatusAsc:
+                    books = books.OrderBy(b => b.Status);
+                    break;
+                case SortBookState.StatusDesc:
+                    books = books.OrderByDescending(b => b.Status);
+                    break;
+            }
+            
+            int pageSize = 2;
+            var items = books.Skip((page - 1) * pageSize).Take(pageSize);
+            PageViewModel pvm = new PageViewModel(books.Count(), page, pageSize);
+            
+            var vm = new BookModels()
+            {
+                Book = items.ToList(),
+                PageViewModel = pvm
+            };
+            
+            return View(vm);
+        }
+        //---------------------------------------------
       
+        
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -47,20 +90,23 @@ namespace ControlWork7.Controllers
             return View();
         }
 
-        
+        //---------------------------------------------
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Author,CoverImageUrl,YearPublished,Description,CreatedDate")] Book book)
+        public async Task<IActionResult> Create([Bind("Name,Author,CoverImageUrl,YearPublished,Description")] Book book)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(book);
+                book.Status = Status.В_наличии;
+                book.CreatedDate = DateOnly.FromDateTime(DateTime.UtcNow);
+                
+                await _context.AddAsync(book);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             return View(book);
         }
-
+        //---------------------------------------------
         
         public async Task<IActionResult> Edit(int? id)
         {
@@ -80,7 +126,7 @@ namespace ControlWork7.Controllers
         
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Author,CoverImageUrl,YearPublished,Description,CreatedDate")] Book book)
+        public async Task<IActionResult> Edit(int id, Book book)
         {
             if (id != book.Id)
             {
