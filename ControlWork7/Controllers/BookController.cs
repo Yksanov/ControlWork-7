@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using ControlWork7.Models;
 using ControlWork7.Services;
 using ControlWork7.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ControlWork7.Controllers
 {
@@ -22,7 +23,7 @@ namespace ControlWork7.Controllers
 
         
         //---------------------------------------------
-        public async Task<IActionResult> Index(int? categoryId, SortBookState? sortOrder = SortBookState.NameAsc, int page = 1)
+        public async Task<IActionResult> Index(int? categoryId, string? bookName, SortBookState? sortOrder = SortBookState.NameAsc, int page = 1)
         {
             IEnumerable<Book> books = await _context.Books.ToListAsync();
             ViewBag.NameSort = sortOrder == SortBookState.NameAsc ? SortBookState.NameDesc : SortBookState.NameAsc;
@@ -55,6 +56,9 @@ namespace ControlWork7.Controllers
             
             if (categoryId.HasValue && categoryId.Value != 0)
                 books = books.Where(p => p.CategoryId == categoryId);
+            
+            if (bookName != null)
+                books = books.Where(t => t.Name.Contains(bookName));
             
             int pageSize = 2;
             var items = books.Skip((page - 1) * pageSize).Take(pageSize);
@@ -202,6 +206,87 @@ namespace ControlWork7.Controllers
         private bool BookExists(int id)
         {
             return _context.Books.Any(e => e.Id == id);
+        }
+
+        //--------------------------------------------
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> LoanBook(int id)
+        {
+            Book book = await _context.Books.FindAsync(id);
+            if (book == null || book.Status == Status.Выдана)
+            {
+                ModelState.AddModelError("", "Книга недоступна для выдачи");
+                return RedirectToAction("Index");
+            }
+
+            string email = User.Identity.Name; 
+            Employee user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            if (user == null)
+            {
+                ModelState.AddModelError(string.Empty, "Пользователь не найден");
+                return RedirectToAction("Index");
+            }
+
+            int count = await _context.BookLoans.CountAsync(b => b.UserId == user.Id && b.ReturnDate == null);
+            if (count >= 3)
+            {
+                ModelState.AddModelError(string.Empty, "Вы не можете взять больше 3 книг");
+                return RedirectToAction("Index");
+            }
+
+            BookLoan bookLoan = new BookLoan
+            {
+                UserId = user.Id, // Используйте правильный идентификатор
+                BookId = book.Id,
+                LoanDate = DateOnly.FromDateTime(DateTime.UtcNow)
+            };
+
+            book.Status = Status.Выдана;
+            _context.Books.Update(book);
+            _context.BookLoans.Add(bookLoan);
+            
+            try
+            {
+                await _context.SaveChangesAsync(); 
+                return RedirectToAction("PersonalAccount"); 
+            }
+            catch (DbUpdateException ex)
+            {
+                ModelState.AddModelError("", "Error");
+                return RedirectToAction("Index");
+            }
+        }
+        
+        public async Task<IActionResult> PersonalAccount(string email)
+        {
+            Employee user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            if (user == null)
+            {
+                ModelState.AddModelError(string.Empty, "Пользователь с таким Email не найден");
+                return View(new List<BookLoan>());
+            }
+
+            var loans = await _context.BookLoans.Where(b => b.UserId == user.Id && b.ReturnDate == null).Include(b => b.Book).ToListAsync();
+            return View(loans);
+        }
+        
+        
+        [HttpPost]
+        public async Task<IActionResult> ReturnBook(int loanId)
+        {
+            BookLoan l = await _context.BookLoans.FindAsync(loanId);
+            if (l == null)
+            {
+                ModelState.AddModelError(string.Empty, "Запись о выдаче не найдена");
+                return RedirectToAction("PersonalAccount");
+            }
+            l.ReturnDate = DateOnly.FromDateTime(DateTime.UtcNow);
+            Book book = await _context.Books.FindAsync(l.BookId);
+            book.Status = Status.В_наличии;
+            _context.Books.Update(book);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("PersonalAccount", new { email = User.Identity.Name });
         }
     }
 }

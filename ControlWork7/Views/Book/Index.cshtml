@@ -29,51 +29,61 @@
         </thead>
     </table>
 
-    <form method="get" asp-action="Index" class="d-flex align-content-between">
-        <div class="col-4 px-3">
-            <select name="categoryId" class="form-control">
-                <option disabled selected>--- Выберите категории ---</option>
-                @foreach (var category in ViewBag.Categories)
-                {
-                    <option value="@category.Id">@category.Name</option>
-                }
-            </select>
-        </div>
-        <button type="submit" class="btn btn-outline-success px-5">Filter</button>
-    </form>
+
+    <div class="container">
+        <form method="get" asp-action="Index" class="d-flex justify-content-center align-items-center">
+            <div class="col-4 px-3">
+                <select name="categoryId" class="form-control">
+                    <option disabled selected>--- Выберите категории ---</option>
+                    @foreach (var category in ViewBag.Categories)
+                    {
+                        <option value="@category.Id">@category.Name</option>
+                    }
+                </select>
+            </div>
+            
+            <div class="col-4 px-3">
+                <label for="bookName" class="form-label sr-only"></label>
+                <input type="text" id="bookName" name="bookName" class="form-control" placeholder="Поиск по названию книги">
+            </div>
+            <button type="submit" class="btn btn-outline-success px-4">Filter</button>
+        </form>
+    </div>
+
 </div>
 
 @if (Model != null && Model.Book.Count() != 0)
 {
-    <div class="row">
-        @foreach (var p in Model.Book)
-        {
-            <div class="col-md-3 col-sm-6 col-12 mb-4 d-flex align-content-sm-stretch">
-                <div class="card border-warning" style="width: 18rem;">
-                    <img src="@p.CoverImageUrl" class="card-img-top" alt="Image" style="width: 100%; max-width: 288px; height: 200px; object-fit: cover;">
-                    <div class="card-body">
-                        <p class="card-text">@p.Name</p>
-                        <p class="card-text">Автор: @p.Author</p>
-                        <p class="card-text">Статус: @p.Status</p>
-                        <div class="row py-3">
-                            <div class="col">
-                                <a asp-action="Create" asp-controller="Book" asp-route-id="@p.Id">
-                                    <button class="btn btn-outline-success">Получить</button>
-                                </a>
-                            </div>
-                            <div class="col">
-                                <a asp-action="Details" asp-controller="Book" asp-route-id="@p.Id">
-                                    <button class="btn btn-outline-danger">Подробнее</button>
-                                </a>
+    <div class="container">
+        <div class="row justify-content-center">
+            @foreach (var p in Model.Book)
+            {
+                <div class="col-md-3 col-sm-6 col-12 mb-4 d-flex align-content-sm-stretch">
+                    <div class="card border-warning" style="width: 18rem;">
+                        <img src="@p.CoverImageUrl" class="card-img-top" alt="Image" style="width: 100%; max-width: 288px; height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <p class="card-text">@p.Name</p>
+                            <p class="card-text">Автор: @p.Author</p>
+                            <p class="card-text">Статус: @p.Status</p>
+                            <div class="row py-3">
+                                <div class="col text-center">
+                                    <a asp-action="LoanBook" asp-controller="Book" asp-route-id="@p.Id">
+                                        <button class="btn btn-outline-success">Получить</button>
+                                    </a>
+                                </div>
+                                <div class="col text-center">
+                                    <a asp-action="Details" asp-controller="Book" asp-route-id="@p.Id">
+                                        <button class="btn btn-outline-danger">Подробнее</button>
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        }
+            }
+        </div>
     </div>
-    
-    
+
     <div class="d-flex justify-content-center">
         <div>
             @if (Model.PageViewModel.HasPreviousPage)
@@ -107,7 +117,6 @@
             {
                 <a asp-action="Index" asp-route-page="@i" class="btn btn-outline-primary">@i</a>
             }
-
         }
 
         @if (Model.PageViewModel.PageNumber + 2 < Model.PageViewModel.TotalPages)
@@ -120,15 +129,15 @@
             {
                 <a asp-action="Index"
                    asp-route-page="@(Model.PageViewModel.PageNumber + 1)"
-                   class="btn btn-outline-primary"><i class="glyphicon glyphicon-chevron-right"></i>
+                   class="btn btn-outline-primary">
+                    <i class="glyphicon glyphicon-chevron-right"></i>
                     Следующая
                 </a>
             }
         </div>
     </div>
-    
 }
 else
 {
-    <h3>Нету продукта пока!</h3>
+    <h3>Нету книга пока!</h3>
 }

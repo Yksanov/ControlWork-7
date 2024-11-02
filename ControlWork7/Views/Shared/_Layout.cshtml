@@ -27,7 +27,7 @@
                         <a class="nav-link text-dark" asp-area="" asp-controller="Book" asp-action="Create">Добавить книгу</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Book" asp-action="Index">Личный кабинет</a>
+                        <a class="nav-link text-dark" asp-area="" asp-controller="Book" asp-action="PersonalAccount">Личный кабинет</a>
                     </li>
                     <li class="nav-item px-3">
                         <a class="nav-link text-dark" asp-area="" asp-controller="Category" asp-action="Create">Добавить категорию</a>
@@ -37,18 +37,18 @@
                 <ul class="navbar-nav flex-grow-1">
                     @if (User.Identity.IsAuthenticated)
                     {
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Logout">Logout</a>
-                    </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Logout">Logout</a>
+                        </li>
                     }
                     else
                     {
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">Login</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Register">Register</a>
-                    </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Register">Register</a>
+                        </li>
                     }
                 </ul>
             </div>

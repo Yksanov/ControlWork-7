@@ -5,30 +5,62 @@
     ViewData["Title"] = "Details";
 }
 
-<div class="container">
-    <div class="card border-5">
-        <div class="card-header"></div>
-        <div class="row align-content-around">
-            <div class="col-4 px-5">
-                <img src="@Html.DisplayFor(model => model.CoverImageUrl)" class="h-50 w-100"/>
-                <p>@Html.DisplayFor(model => model.Name)</p>
-                <p>Автор: @Html.DisplayFor(model => model.Author)</p>
-                <p>Статус:
-                    @if (Model.Status == Status.В_наличии)
-                    {
-                        @Html.DisplayFor(model => model.Status)
-                    }
-                    else if (Model.Status == Status.Выдана)
-                    {
-                        @Html.DisplayFor(model => model.Status)
-                    }
-                </p>
+<div class="col-9">
+    <h2>Show Book</h2>
+    @if (Model != null)
+    {
+        <div class="container row">
+            <div class="col-6">
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <strong>Название: </strong>@Model.Name
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Автор: </strong>@Model.Author
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Status: </strong>
+                        @if (Model.Status != null)
+                        {
+                            @if (Model.Status == Status.В_наличии)
+                            {
+                                @Html.DisplayFor(model => model.Status)
+                            }
+                            else if (Model.Status == Status.Выдана)
+                            {
+                                @Html.DisplayFor(model => model.Status)
+                            }
+                        }
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Category: </strong>
+                        @if (Model.Category != null) 
+                        {
+                            @Model.Category.Name
+                        }
+                        else
+                        {
+                            <span>Категория не указана</span> 
+                        }
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Описание: </strong>@Model.Description
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Дата создания: </strong>@Model.CreatedDate.ToString("MM/dd/yyyy")
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Год выпуска: </strong>@Model.YearPublished
+                    </li>
+                </ul>
             </div>
-
-            <div class="col-3 border border-end-0 border-dark">
-                <h3>Описание задачи</h3>
-                <p>@Html.DisplayFor(model => model.Description)</p>
+            <div class="col-6">
+                <img src="@Model.CoverImageUrl" alt="Cover Image" class="img-fluid" style="width: 100%; max-width: 300px; height: auto; max-height: 300px; object-fit: cover;"/>
             </div>
         </div>
-    </div>
+    }
+    else
+    {
+        <h3>Book not found</h3>
+    }
 </div>

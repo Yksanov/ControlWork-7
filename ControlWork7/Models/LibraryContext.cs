@@ -9,5 +9,7 @@ public class LibraryContext : DbContext
     
     public DbSet<Employee> Users { get; set; }
     
+    public DbSet<BookLoan> BookLoans { get; set; }
+    
     public LibraryContext(DbContextOptions<LibraryContext> options) : base(options) { }
 }
