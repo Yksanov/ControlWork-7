@@ -237,7 +237,7 @@ namespace ControlWork7.Controllers
 
             BookLoan bookLoan = new BookLoan
             {
-                UserId = user.Id, // Используйте правильный идентификатор
+                UserId = user.Id,
                 BookId = book.Id,
                 LoanDate = DateOnly.FromDateTime(DateTime.UtcNow)
             };
@@ -245,7 +245,6 @@ namespace ControlWork7.Controllers
             book.Status = Status.Выдана;
             _context.Books.Update(book);
             _context.BookLoans.Add(bookLoan);
-            
             try
             {
                 await _context.SaveChangesAsync(); 
@@ -258,9 +257,11 @@ namespace ControlWork7.Controllers
             }
         }
         
-        public async Task<IActionResult> PersonalAccount(string email)
+        public async Task<IActionResult> PersonalAccount()
         {
+            string email = User.Identity.Name;
             Employee user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+    
             if (user == null)
             {
                 ModelState.AddModelError(string.Empty, "Пользователь с таким Email не найден");
@@ -270,6 +271,7 @@ namespace ControlWork7.Controllers
             var loans = await _context.BookLoans.Where(b => b.UserId == user.Id && b.ReturnDate == null).Include(b => b.Book).ToListAsync();
             return View(loans);
         }
+
         
         
         [HttpPost]
