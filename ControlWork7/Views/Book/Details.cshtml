@@ -1,54 +1,34 @@
+@using ControlWork7.Services
 @model ControlWork7.Models.Book
 
 @{
     ViewData["Title"] = "Details";
 }
 
-<h1>Details</h1>
+<div class="container">
+    <div class="card border-5">
+        <div class="card-header"></div>
+        <div class="row align-content-around">
+            <div class="col-4 px-5">
+                <img src="@Html.DisplayFor(model => model.CoverImageUrl)" class="h-50 w-100"/>
+                <p>@Html.DisplayFor(model => model.Name)</p>
+                <p>Автор: @Html.DisplayFor(model => model.Author)</p>
+                <p>Статус:
+                    @if (Model.Status == Status.В_наличии)
+                    {
+                        @Html.DisplayFor(model => model.Status)
+                    }
+                    else if (Model.Status == Status.Выдана)
+                    {
+                        @Html.DisplayFor(model => model.Status)
+                    }
+                </p>
+            </div>
 
-<div>
-    <h4>Book</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Author)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Author)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CoverImageUrl)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CoverImageUrl)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.YearPublished)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.YearPublished)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Description)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CreatedDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CreatedDate)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+            <div class="col-3 border border-end-0 border-dark">
+                <h3>Описание задачи</h3>
+                <p>@Html.DisplayFor(model => model.Description)</p>
+            </div>
+        </div>
+    </div>
 </div>

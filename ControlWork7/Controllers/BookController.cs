@@ -22,7 +22,7 @@ namespace ControlWork7.Controllers
 
         
         //---------------------------------------------
-        public async Task<IActionResult> Index(SortBookState? sortOrder = SortBookState.NameAsc, int page = 1)
+        public async Task<IActionResult> Index(int? categoryId, SortBookState? sortOrder = SortBookState.NameAsc, int page = 1)
         {
             IEnumerable<Book> books = await _context.Books.ToListAsync();
             ViewBag.NameSort = sortOrder == SortBookState.NameAsc ? SortBookState.NameDesc : SortBookState.NameAsc;
@@ -53,14 +53,22 @@ namespace ControlWork7.Controllers
                     break;
             }
             
+            if (categoryId.HasValue && categoryId.Value != 0)
+                books = books.Where(p => p.CategoryId == categoryId);
+            
             int pageSize = 2;
             var items = books.Skip((page - 1) * pageSize).Take(pageSize);
             PageViewModel pvm = new PageViewModel(books.Count(), page, pageSize);
             
+            List<Category> categories = await _context.Categories.ToListAsync();
+            categories.Insert(0, new Category(){Id = 0, Name = "All categories"});
+            ViewBag.Categories = categories;
+            
             var vm = new BookModels()
             {
                 Book = items.ToList(),
-                PageViewModel = pvm
+                PageViewModel = pvm,
+                Categories = categories
             };
             
             return View(vm);
@@ -87,13 +95,15 @@ namespace ControlWork7.Controllers
         
         public IActionResult Create()
         {
+            ViewBag.Categories = new SelectList(_context.Categories, "Id", "Name");
+            
             return View();
         }
 
         //---------------------------------------------
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Name,Author,CoverImageUrl,YearPublished,Description")] Book book)
+        public async Task<IActionResult> Create([Bind("Name,Author,CoverImageUrl,YearPublished,Description, CategoryId")] Book book)
         {
             if (ModelState.IsValid)
             {

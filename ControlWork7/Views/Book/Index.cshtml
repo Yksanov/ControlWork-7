@@ -29,18 +29,18 @@
         </thead>
     </table>
 
-    @* <form method="get" asp-action="Index" class="d-flex align-content-between"> *@
-    @*     <div class="col-4 px-3"> *@
-    @*         <select name="categoryId" class="form-control"> *@
-    @*             <option disabled selected>--Select Category--</option> *@
-    @*             @foreach (var category in ViewBag.Categories) *@
-    @*             { *@
-    @*                 <option value="@category.Id">@category.Name</option> *@
-    @*             } *@
-    @*         </select> *@
-    @*     </div> *@
-    @*     <button type="submit" class="btn btn-outline-success px-5">Filter</button> *@
-    @* </form> *@
+    <form method="get" asp-action="Index" class="d-flex align-content-between">
+        <div class="col-4 px-3">
+            <select name="categoryId" class="form-control">
+                <option disabled selected>--- Выберите категории ---</option>
+                @foreach (var category in ViewBag.Categories)
+                {
+                    <option value="@category.Id">@category.Name</option>
+                }
+            </select>
+        </div>
+        <button type="submit" class="btn btn-outline-success px-5">Filter</button>
+    </form>
 </div>
 
 @if (Model != null && Model.Book.Count() != 0)
