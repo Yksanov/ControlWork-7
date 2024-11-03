@@ -19,7 +19,7 @@
                         <strong>Автор: </strong>@Model.Author
                     </li>
                     <li class="list-group-item">
-                        <strong>Status: </strong>
+                        <strong>Статус: </strong>
                         @if (Model.Status != null)
                         {
                             @if (Model.Status == Status.В_наличии)
@@ -33,7 +33,7 @@
                         }
                     </li>
                     <li class="list-group-item">
-                        <strong>Category: </strong>
+                        <strong>Категория: </strong>
                         @if (Model.Category != null) 
                         {
                             @Model.Category.Name

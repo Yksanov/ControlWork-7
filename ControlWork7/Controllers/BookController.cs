@@ -21,14 +21,18 @@ namespace ControlWork7.Controllers
             _context = context;
         }
 
-        
+
         //---------------------------------------------
         public async Task<IActionResult> Index(int? categoryId, string? bookName, SortBookState? sortOrder = SortBookState.NameAsc, int page = 1)
         {
             IEnumerable<Book> books = await _context.Books.ToListAsync();
             ViewBag.NameSort = sortOrder == SortBookState.NameAsc ? SortBookState.NameDesc : SortBookState.NameAsc;
-            ViewBag.AuthorSort = sortOrder == SortBookState.AuthorAsc ? SortBookState.AuthorDesc : SortBookState.AuthorAsc;
-            ViewBag.StatusSort = sortOrder == SortBookState.StatusAsc ? SortBookState.StatusDesc : SortBookState.StatusAsc;
+            ViewBag.AuthorSort = sortOrder == SortBookState.AuthorAsc
+                ? SortBookState.AuthorDesc
+                : SortBookState.AuthorAsc;
+            ViewBag.StatusSort = sortOrder == SortBookState.StatusAsc
+                ? SortBookState.StatusDesc
+                : SortBookState.StatusAsc;
 
             switch (sortOrder)
             {
@@ -38,14 +42,14 @@ namespace ControlWork7.Controllers
                 case SortBookState.NameDesc:
                     books = books.OrderByDescending(b => b.Name);
                     break;
-                
+
                 case SortBookState.AuthorAsc:
                     books = books.OrderBy(b => b.Author);
                     break;
                 case SortBookState.AuthorDesc:
                     books = books.OrderByDescending(b => b.Author);
                     break;
-                
+
                 case SortBookState.StatusAsc:
                     books = books.OrderBy(b => b.Status);
                     break;
@@ -53,33 +57,33 @@ namespace ControlWork7.Controllers
                     books = books.OrderByDescending(b => b.Status);
                     break;
             }
-            
+
             if (categoryId.HasValue && categoryId.Value != 0)
                 books = books.Where(p => p.CategoryId == categoryId);
-            
+
             if (bookName != null)
                 books = books.Where(t => t.Name.Contains(bookName));
-            
+
             int pageSize = 2;
             var items = books.Skip((page - 1) * pageSize).Take(pageSize);
             PageViewModel pvm = new PageViewModel(books.Count(), page, pageSize);
-            
+
+            ViewBag.Categories = _context.Categories.ToList();
             List<Category> categories = await _context.Categories.ToListAsync();
-            categories.Insert(0, new Category(){Id = 0, Name = "All categories"});
-            ViewBag.Categories = categories;
-            
+            categories.Insert(0, new Category() { Id = 0, Name = "All categories" });
+
             var vm = new BookModels()
             {
                 Book = items.ToList(),
                 PageViewModel = pvm,
                 Categories = categories
             };
-            
+
             return View(vm);
         }
         //---------------------------------------------
-      
-        
+
+
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -89,6 +93,7 @@ namespace ControlWork7.Controllers
 
             var book = await _context.Books
                 .FirstOrDefaultAsync(m => m.Id == id);
+            _context.Books.Include(p => p.Category).ToList();
             if (book == null)
             {
                 return NotFound();
@@ -96,32 +101,34 @@ namespace ControlWork7.Controllers
 
             return View(book);
         }
-        
+
         public IActionResult Create()
         {
             ViewBag.Categories = new SelectList(_context.Categories, "Id", "Name");
-            
+
             return View();
         }
 
         //---------------------------------------------
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Name,Author,CoverImageUrl,YearPublished,Description, CategoryId")] Book book)
+        public async Task<IActionResult> Create(
+            [Bind("Name,Author,CoverImageUrl,YearPublished,Description, CategoryId")] Book book)
         {
             if (ModelState.IsValid)
             {
                 book.Status = Status.В_наличии;
                 book.CreatedDate = DateOnly.FromDateTime(DateTime.UtcNow);
-                
+
                 await _context.AddAsync(book);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
             return View(book);
         }
         //---------------------------------------------
-        
+
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -134,10 +141,11 @@ namespace ControlWork7.Controllers
             {
                 return NotFound();
             }
+
             return View(book);
         }
 
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Book book)
@@ -165,12 +173,14 @@ namespace ControlWork7.Controllers
                         throw;
                     }
                 }
+
                 return RedirectToAction(nameof(Index));
             }
+
             return View(book);
         }
 
-        
+
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -188,7 +198,7 @@ namespace ControlWork7.Controllers
             return View(book);
         }
 
-        
+
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -219,7 +229,7 @@ namespace ControlWork7.Controllers
                 ModelState.AddModelError("", "Книга недоступна для выдачи");
                 return RedirectToAction("Index");
             }
-
+        
             string email = User.Identity.Name; 
             Employee user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
             if (user == null)
@@ -227,21 +237,21 @@ namespace ControlWork7.Controllers
                 ModelState.AddModelError(string.Empty, "Пользователь не найден");
                 return RedirectToAction("Index");
             }
-
+        
             int count = await _context.BookLoans.CountAsync(b => b.UserId == user.Id && b.ReturnDate == null);
             if (count >= 3)
             {
                 ModelState.AddModelError(string.Empty, "Вы не можете взять больше 3 книг");
                 return RedirectToAction("Index");
             }
-
+        
             BookLoan bookLoan = new BookLoan
             {
                 UserId = user.Id,
                 BookId = book.Id,
                 LoanDate = DateOnly.FromDateTime(DateTime.UtcNow)
             };
-
+        
             book.Status = Status.Выдана;
             _context.Books.Update(book);
             _context.BookLoans.Add(bookLoan);
@@ -256,23 +266,25 @@ namespace ControlWork7.Controllers
                 return RedirectToAction("Index");
             }
         }
-        
+
+
         public async Task<IActionResult> PersonalAccount()
         {
             string email = User.Identity.Name;
             Employee user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-    
+
             if (user == null)
             {
                 ModelState.AddModelError(string.Empty, "Пользователь с таким Email не найден");
                 return View(new List<BookLoan>());
             }
 
-            var loans = await _context.BookLoans.Where(b => b.UserId == user.Id && b.ReturnDate == null).Include(b => b.Book).ToListAsync();
+            var loans = await _context.BookLoans.Where(b => b.UserId == user.Id && b.ReturnDate == null)
+                .Include(b => b.Book).ToListAsync();
             return View(loans);
         }
-        
-        
+
+
         [HttpPost]
         public async Task<IActionResult> ReturnBook(int loanId)
         {
@@ -282,6 +294,7 @@ namespace ControlWork7.Controllers
                 ModelState.AddModelError(string.Empty, "Запись о выдаче не найдена");
                 return RedirectToAction("PersonalAccount");
             }
+
             l.ReturnDate = DateOnly.FromDateTime(DateTime.UtcNow);
             Book book = await _context.Books.FindAsync(l.BookId);
             book.Status = Status.В_наличии;
@@ -289,5 +302,6 @@ namespace ControlWork7.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction("PersonalAccount", new { email = User.Identity.Name });
         }
+
     }
 }
