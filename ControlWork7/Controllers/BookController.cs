@@ -255,30 +255,24 @@ namespace ControlWork7.Controllers
             book.Status = Status.Выдана;
             _context.Books.Update(book);
             _context.BookLoans.Add(bookLoan);
-            try
-            {
-                await _context.SaveChangesAsync(); 
-                return RedirectToAction("PersonalAccount"); 
-            }
-            catch (DbUpdateException ex)
-            {
-                ModelState.AddModelError("", "Error");
-                return RedirectToAction("Index");
-            }
+            
+            await _context.SaveChangesAsync(); 
+            return RedirectToAction("PersonalAccount");
         }
+
 
 
         public async Task<IActionResult> PersonalAccount()
         {
             string email = User.Identity.Name;
             Employee user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-
+        
             if (user == null)
             {
                 ModelState.AddModelError(string.Empty, "Пользователь с таким Email не найден");
                 return View(new List<BookLoan>());
             }
-
+        
             var loans = await _context.BookLoans.Where(b => b.UserId == user.Id && b.ReturnDate == null)
                 .Include(b => b.Book).ToListAsync();
             return View(loans);
