@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -91,9 +87,8 @@ namespace ControlWork7.Controllers
                 return NotFound();
             }
 
-            var book = await _context.Books
-                .FirstOrDefaultAsync(m => m.Id == id);
-            _context.Books.Include(p => p.Category).ToList();
+            var book = await _context.Books.FirstOrDefaultAsync(m => m.Id == id); 
+            await _context.Books.Include(p => p.Category).ToListAsync();
             if (book == null)
             {
                 return NotFound();
@@ -112,8 +107,7 @@ namespace ControlWork7.Controllers
         //---------------------------------------------
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(
-            [Bind("Name,Author,CoverImageUrl,YearPublished,Description, CategoryId")] Book book)
+        public async Task<IActionResult> Create([Bind("Name,Author,CoverImageUrl,YearPublished,Description, CategoryId")] Book book)
         {
             if (ModelState.IsValid)
             {
@@ -223,6 +217,11 @@ namespace ControlWork7.Controllers
         [HttpGet]
         public async Task<IActionResult> LoanBook(int id)
         {
+            if (id == null)
+            {
+                return NotFound("Id не найден!");
+            }
+            
             Book book = await _context.Books.FindAsync(id);
             if (book == null || book.Status == Status.Выдана)
             {
@@ -282,20 +281,19 @@ namespace ControlWork7.Controllers
         [HttpPost]
         public async Task<IActionResult> ReturnBook(int loanId)
         {
-            BookLoan l = await _context.BookLoans.FindAsync(loanId);
-            if (l == null)
+            BookLoan loan = await _context.BookLoans.FindAsync(loanId);
+            if (loan == null)
             {
                 ModelState.AddModelError(string.Empty, "Запись о выдаче не найдена");
                 return RedirectToAction("PersonalAccount");
             }
 
-            l.ReturnDate = DateOnly.FromDateTime(DateTime.UtcNow);
-            Book book = await _context.Books.FindAsync(l.BookId);
+            loan.ReturnDate = DateOnly.FromDateTime(DateTime.UtcNow);
+            Book book = await _context.Books.FindAsync(loan.BookId);
             book.Status = Status.В_наличии;
             _context.Books.Update(book);
             await _context.SaveChangesAsync();
             return RedirectToAction("PersonalAccount", new { email = User.Identity.Name });
         }
-
     }
 }
