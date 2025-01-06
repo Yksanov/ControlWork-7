@@ -2,7 +2,7 @@
   "Files": [
     {
       "Id": "D:\\Attractor\\month#2\\ControlWork7\\ControlWork7\\obj\\Debug\\net8.0\\scopedcss\\projectbundle\\ControlWork7.bundle.scp.css",
-      "PackagePath": "staticwebassets\\ControlWork7.bundle.scp.css"
+      "PackagePath": "staticwebassets\\ControlWork7.5pog3ta4c3.bundle.scp.css"
     },
     {
       "Id": "D:\\Attractor\\month#2\\ControlWork7\\ControlWork7\\wwwroot\\authorize\\813-8130282_denied-png-access-denied-stamp-png.png",
@@ -247,6 +247,10 @@
     {
       "Id": "D:\\Attractor\\month#2\\ControlWork7\\ControlWork7\\wwwroot\\lib\\jquery\\dist\\jquery.min.map",
       "PackagePath": "staticwebassets\\lib\\jquery\\dist\\jquery.min.map"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.ControlWork7.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssetEndpoints.props"
     },
     {
       "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.ControlWork7.Microsoft.AspNetCore.StaticWebAssets.props",
